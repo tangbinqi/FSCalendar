@@ -152,7 +152,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     _gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
     _formatter = [[NSDateFormatter alloc] init];
     _formatter.dateFormat = @"yyyy-MM-dd";
-    _locale = [NSLocale currentLocale];
+    _locale = [NSLocale localeWithLocaleIdentifier:@"zh_CN"];
     _timeZone = [NSTimeZone localTimeZone];
     _firstWeekday = 1;
     [self invalidateDateTools];
@@ -301,8 +301,10 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
         }
         
         self.calendarHeaderView.frame = CGRectMake(0, 0, self.fs_width, headerHeight);
-        self.calendarWeekdayView.frame = CGRectMake(0, self.calendarHeaderView.fs_bottom, self.contentView.fs_width, weekdayHeight);
-
+        // 根据headerView是否独立，修改它在父视图的占位的高度
+        headerHeight = self.calendarHeaderViewIsAlone?0:self.preferredHeaderHeight;
+        self.calendarWeekdayView.frame = CGRectMake(0, headerHeight, self.contentView.fs_width, weekdayHeight);
+        
         _deliver.frame = CGRectMake(self.calendarHeaderView.fs_left, self.calendarHeaderView.fs_top, self.calendarHeaderView.fs_width, headerHeight+weekdayHeight);
         _deliver.hidden = self.calendarHeaderView.hidden;
         if (!self.floatingMode) {
@@ -1283,7 +1285,9 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
             FSCalendarHeaderView *headerView = [[FSCalendarHeaderView alloc] initWithFrame:CGRectZero];
             headerView.calendar = self;
             headerView.scrollEnabled = _scrollEnabled;
-            [_contentView addSubview:headerView];
+            if (!self.calendarHeaderViewIsAlone) {
+                [_contentView addSubview:headerView];
+            }
             self.calendarHeaderView = headerView;
             
         }
@@ -1298,7 +1302,9 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
         if (_scrollEnabled) {
             if (!_deliver) {
                 FSCalendarHeaderTouchDeliver *deliver = [[FSCalendarHeaderTouchDeliver alloc] initWithFrame:CGRectZero];
-                deliver.header = _calendarHeaderView;
+                if (!self.calendarHeaderViewIsAlone) {
+                    deliver.header = _calendarHeaderView;
+                }
                 deliver.calendar = self;
                 [_contentView addSubview:deliver];
                 self.deliver = deliver;

@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FSCalendarScopeExampleViewController()<UITableViewDataSource,UITableViewDelegate,FSCalendarDataSource,FSCalendarDelegate,UIGestureRecognizerDelegate>
+@interface FSCalendarScopeExampleViewController()<UITableViewDataSource,UITableViewDelegate,FSCalendarDataSource,FSCalendarDelegate,FSCalendarDelegateAppearance,UIGestureRecognizerDelegate>
 {
     void * _KVOContext;
 }
@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UISwitch *animationSwitch;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *calendarHeightConstraint;
-
+@property (strong, nonatomic) NSCalendar *gregorianCalendar;
 @property (strong, nonatomic) NSDateFormatter *dateFormatter;
 @property (strong, nonatomic) UIPanGestureRecognizer *scopeGesture;
 
@@ -37,7 +37,11 @@ NS_ASSUME_NONNULL_END
     self = [super initWithCoder:coder];
     if (self) {
         self.dateFormatter = [[NSDateFormatter alloc] init];
-        self.dateFormatter.dateFormat = @"yyyy/MM/dd";
+//        self.dateFormatter.dateFormat = @"yyyy/MM/dd";
+        self.dateFormatter.dateFormat = @"yyyy年MM月";
+        NSLocale *chinese = [NSLocale localeWithLocaleIdentifier:@"zh-CN"];
+        self.dateFormatter.locale = chinese;
+        self.gregorianCalendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
     }
     return self;
 }
@@ -45,9 +49,12 @@ NS_ASSUME_NONNULL_END
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
+//    [self.navigationController setNavigationBarHidden:YES];
+//    self.calendar.headerHeight = 0;
     if ([[UIDevice currentDevice].model hasPrefix:@"iPad"]) {
         self.calendarHeightConstraint.constant = 400;
+    }else {
+        self.calendarHeightConstraint.constant = [UIScreen mainScreen].bounds.size.width;
     }
     [self.calendar selectDate:[NSDate date] scrollToDate:YES];
     
@@ -62,9 +69,11 @@ NS_ASSUME_NONNULL_END
     [self.tableView.panGestureRecognizer requireGestureRecognizerToFail:panGesture];
     
     [self.calendar addObserver:self forKeyPath:@"scope" options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld context:_KVOContext];
-    self.calendar.placeholderType = FSCalendarPlaceholderTypeNone;
-    self.calendar.scope = FSCalendarScopeWeek;
-    
+    self.calendar.placeholderType = FSCalendarPlaceholderTypeFillSixRows;
+    self.calendar.scope = FSCalendarScopeMonth;
+    self.calendar.firstWeekday = 2;
+    self.navigationItem.title = [self.dateFormatter stringFromDate:self.calendar.currentPage];
+
     // For UITest
     self.calendar.accessibilityIdentifier = @"calendar";
     
@@ -107,8 +116,35 @@ NS_ASSUME_NONNULL_END
     return shouldBegin;
 }
 
-#pragma mark - <FSCalendarDelegate>
+#pragma mark - FSCalendarDataSource
 
+- (NSString *)calendar:(FSCalendar *)calendar titleForDate:(NSDate *)date
+{
+    return [self.gregorianCalendar isDateInToday:date] ? @"今天" : nil;
+}
+
+- (NSInteger)calendar:(FSCalendar *)calendar numberOfEventsForDate:(NSDate *)date
+{
+    return arc4random()%9;
+}
+
+- (NSDate *)minimumDateForCalendar:(FSCalendar *)calendar
+{
+    return [self.dateFormatter dateFromString:@"2018/9/01"];
+}
+
+- (NSDate *)maximumDateForCalendar:(FSCalendar *)calendar
+{
+    return [self.dateFormatter dateFromString:@"2018/12/31"];
+}
+
+#pragma marl - <FSCalendarDelegateAppearance>
+- (CGPoint)calendar:(FSCalendar *)calendar appearance:(FSCalendarAppearance *)appearance titleOffsetForDate:(NSDate *)date
+{
+    return CGPointZero;
+}
+
+#pragma mark - <FSCalendarDelegate>
 - (void)calendar:(FSCalendar *)calendar boundingRectWillChange:(CGRect)bounds animated:(BOOL)animated
 {
 //    NSLog(@"%@",(calendar.scope==FSCalendarScopeWeek?@"week":@"month"));
@@ -133,6 +169,7 @@ NS_ASSUME_NONNULL_END
 - (void)calendarCurrentPageDidChange:(FSCalendar *)calendar
 {
     NSLog(@"%s %@", __FUNCTION__, [self.dateFormatter stringFromDate:calendar.currentPage]);
+    self.navigationItem.title = [self.dateFormatter stringFromDate:calendar.currentPage];
 }
 
 #pragma mark - <UITableViewDataSource>
@@ -178,6 +215,14 @@ NS_ASSUME_NONNULL_END
 }
 
 #pragma mark - Target actions
+
+- (IBAction)backClicked:(id)sender {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (IBAction)goTodayClicked:(id)sender {
+    [self.calendar selectDate:self.calendar.today scrollToDate:YES];
+}
 
 - (IBAction)toggleClicked:(id)sender
 {

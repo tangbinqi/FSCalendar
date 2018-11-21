@@ -12,6 +12,8 @@
 #import "FSCalendarDynamicHeader.h"
 #import "FSCalendarConstants.h"
 
+static CGFloat FSCellTitleAspectRatio = 4.0/6.0;
+
 @interface FSCalendarCell ()
 
 @property (readonly, nonatomic) UIColor *colorForCellFill;
@@ -124,34 +126,37 @@
                                        self.preferredTitleOffset.x,
                                        self.preferredTitleOffset.y,
                                        self.contentView.fs_width,
-                                       floor(self.contentView.fs_height*5.0/6.0)
+                                       floor(self.contentView.fs_height*FSCellTitleAspectRatio)
                                        );
     }
     
     _imageView.frame = CGRectMake(self.preferredImageOffset.x, self.preferredImageOffset.y, self.contentView.fs_width, self.contentView.fs_height);
     
-    CGFloat titleHeight = self.bounds.size.height*5.0/6.0;
-    CGFloat diameter = MIN(self.bounds.size.height*5.0/6.0,self.bounds.size.width);
+    /*
+    CGFloat titleHeight = self.contentView.fs_height*FSCellTitleAspectRatio;
+    CGFloat diameter = MIN(self.bounds.size.height*FSCellTitleAspectRatio,self.bounds.size.width);
     diameter = diameter > FSCalendarStandardCellDiameter ? (diameter - (diameter-FSCalendarStandardCellDiameter)*0.5) : diameter;
     _shapeLayer.frame = CGRectMake((self.bounds.size.width-diameter)/2,
                                    (titleHeight-diameter)/2,
                                    diameter,
                                    diameter);
-    
     CGPathRef path = [UIBezierPath bezierPathWithRoundedRect:_shapeLayer.bounds
                                                 cornerRadius:CGRectGetWidth(_shapeLayer.bounds)*0.5*self.borderRadius].CGPath;
+     */
+    _shapeLayer.frame = self.bounds;
+    CGPathRef path = [UIBezierPath bezierPathWithRoundedRect:_shapeLayer.bounds
+                                                cornerRadius:4.0f].CGPath;
     if (!CGPathEqualToPath(_shapeLayer.path,path)) {
         _shapeLayer.path = path;
     }
     
-    CGFloat eventSize = _shapeLayer.frame.size.height/6.0;
+    CGFloat eventIndicatorHeight = self.bounds.size.height*(1-FSCellTitleAspectRatio);
     _eventIndicator.frame = CGRectMake(
                                        self.preferredEventOffset.x,
-                                       CGRectGetMaxY(_shapeLayer.frame)+eventSize*0.17+self.preferredEventOffset.y,
-                                       self.fs_width,
-                                       eventSize*0.83
+                                       _titleLabel.fs_bottom+self.preferredEventOffset.y,
+                                       self.contentView.fs_width,
+                                       eventIndicatorHeight
                                       );
-    
 }
 
 - (void)prepareForReuse
@@ -230,11 +235,20 @@
             _shapeLayer.strokeColor = cellBorderColor;
         }
         
+        /**
+         CGPathRef path = [UIBezierPath bezierPathWithRoundedRect:_shapeLayer.bounds
+         cornerRadius:CGRectGetWidth(_shapeLayer.bounds)*0.5*self.borderRadius].CGPath;
+         if (!CGPathEqualToPath(_shapeLayer.path, path)) {
+         _shapeLayer.path = path;
+         }
+         */
+        _shapeLayer.frame = self.bounds;
         CGPathRef path = [UIBezierPath bezierPathWithRoundedRect:_shapeLayer.bounds
-                                                    cornerRadius:CGRectGetWidth(_shapeLayer.bounds)*0.5*self.borderRadius].CGPath;
-        if (!CGPathEqualToPath(_shapeLayer.path, path)) {
+                                                    cornerRadius:4.0f].CGPath;
+        if (!CGPathEqualToPath(_shapeLayer.path,path)) {
             _shapeLayer.path = path;
         }
+
         
     }
     
@@ -284,6 +298,9 @@
 
 - (UIColor *)colorForTitleLabel
 {
+    if (self.dateIsToday) {
+        return _appearance.eventTodayColor;
+    }
     if (self.selected) {
         return self.preferredTitleSelectionColor ?: [self colorForCurrentStateInDictionary:_appearance.titleColors];
     }
@@ -308,9 +325,15 @@
 
 - (NSArray<UIColor *> *)colorsForEvents
 {
-    if (self.selected) {
-        return _preferredEventSelectionColors ?: @[_appearance.eventSelectionColor];
+    if (self.dateIsToday) {
+        return @[_appearance.eventTodayColor];
     }
+    if (self.placeholder ) {
+        return @[_appearance.eventPlaceholderColor];
+    }
+//    if (self.selected) {
+//        return _preferredEventSelectionColors ?: @[_appearance.eventSelectionColor];
+//    }
     return _preferredEventDefaultColors ?: @[_appearance.eventDefaultColor];
 }
 
@@ -375,6 +398,8 @@ OFFSET_PROPERTY(preferredEventOffset, PreferredEventOffset, _appearance.eventOff
 
 @end
 
+static NSInteger FSCalendarMaxnumberOfEvents = 8;
+
 @implementation FSCalendarEventIndicator
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -387,7 +412,7 @@ OFFSET_PROPERTY(preferredEventOffset, PreferredEventOffset, _appearance.eventOff
         self.contentView = view;
         
         self.eventLayers = [NSPointerArray weakObjectsPointerArray];
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < FSCalendarMaxnumberOfEvents; i++) {
             CALayer *layer = [CALayer layer];
             layer.backgroundColor = [UIColor clearColor].CGColor;
             [self.contentView.layer addSublayer:layer];
@@ -403,7 +428,11 @@ OFFSET_PROPERTY(preferredEventOffset, PreferredEventOffset, _appearance.eventOff
     [super layoutSubviews];
     CGFloat diameter = MIN(MIN(self.fs_width, self.fs_height),FSCalendarMaximumEventDotDiameter);
     self.contentView.fs_height = self.fs_height;
-    self.contentView.fs_width = (self.numberOfEvents*2-1)*diameter;
+    if (self.numberOfEvents <= 4 && self.numberOfEvents > 0) {
+        self.contentView.fs_width = (self.numberOfEvents*diameter+(self.numberOfEvents-1)*FSCalendarMaximumEventDotSpace);
+    }else {
+        self.contentView.fs_width = (4*diameter+3*FSCalendarMaximumEventDotSpace);
+    }
     self.contentView.center = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds));
 }
 
@@ -417,9 +446,11 @@ OFFSET_PROPERTY(preferredEventOffset, PreferredEventOffset, _appearance.eventOff
             CALayer *eventLayer = [self.eventLayers pointerAtIndex:i];
             eventLayer.hidden = i >= self.numberOfEvents;
             if (!eventLayer.hidden) {
-                eventLayer.frame = CGRectMake(2*i*diameter, (self.fs_height-diameter)*0.5, diameter, diameter);
-                if (eventLayer.cornerRadius != diameter/2) {
-                    eventLayer.cornerRadius = diameter/2;
+                int indexX = i%4;
+                int indexY = i/4;
+                eventLayer.frame = CGRectMake(indexX*(diameter+FSCalendarMaximumEventDotSpace), indexY*(diameter+FSCalendarMaximumEventDotSpace), diameter, diameter);
+                if (eventLayer.cornerRadius != 1.0) {
+                    eventLayer.cornerRadius = 1.0;
                 }
             }
         }
@@ -450,7 +481,7 @@ OFFSET_PROPERTY(preferredEventOffset, PreferredEventOffset, _appearance.eventOff
 - (void)setNumberOfEvents:(NSInteger)numberOfEvents
 {
     if (_numberOfEvents != numberOfEvents) {
-        _numberOfEvents = MIN(MAX(numberOfEvents,0),3);
+        _numberOfEvents = MIN(MAX(numberOfEvents,0),FSCalendarMaxnumberOfEvents);
         [self setNeedsLayout];
     }
 }

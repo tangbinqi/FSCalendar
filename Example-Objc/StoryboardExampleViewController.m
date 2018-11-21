@@ -122,7 +122,7 @@
 
 - (NSDate *)maximumDateForCalendar:(FSCalendar *)calendar
 {
-    return [self.dateFormatter1 dateFromString:@"2018/05/31"];
+    return [self.dateFormatter1 dateFromString:@"2018/12/31"];
 }
 
 #pragma mark - FSCalendarDelegate

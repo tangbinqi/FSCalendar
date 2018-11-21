@@ -348,6 +348,11 @@ IB_DESIGNABLE
 @property (strong, nonatomic) FSCalendarHeaderView *calendarHeaderView;
 
 /**
+ The header view of the calendar is alone(不添加到FSCalendar，可能会添加到导航栏上)
+ */
+@property (assign, nonatomic) IBInspectable BOOL calendarHeaderViewIsAlone;
+
+/**
  A Boolean value that determines whether users can select a date.
  */
 @property (assign, nonatomic) IBInspectable BOOL allowsSelection;

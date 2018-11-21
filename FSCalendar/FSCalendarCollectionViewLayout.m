@@ -541,11 +541,15 @@
     CGFloat height = self.heights[row];
     switch (totalRows) {
         case 4:
-        case 5: {
+        case 5:
+#warning TBQ 行高固定，不再根据行数调整
+            /* 行高固定，不再根据行数调整
+        {
             CGFloat contentHeight = self.collectionView.fs_height - self.sectionInsets.top - self.sectionInsets.bottom;
             CGFloat rowSpan = contentHeight/totalRows;
             return (row + 0.5) * rowSpan - height * 0.5 + self.sectionInsets.top;
         }
+             */
         case 6:
         default:
             return self.tops[row];

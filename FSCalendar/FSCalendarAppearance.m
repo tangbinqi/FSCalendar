@@ -30,30 +30,30 @@
     self = [super init];
     if (self) {
         
-        _titleFont = [UIFont systemFontOfSize:FSCalendarStandardTitleTextSize];
+        _titleFont = [UIFont boldSystemFontOfSize:FSCalendarStandardTitleTextSize];
         _subtitleFont = [UIFont systemFontOfSize:FSCalendarStandardSubtitleTextSize];
-        _weekdayFont = [UIFont systemFontOfSize:FSCalendarStandardWeekdayTextSize];
-        _headerTitleFont = [UIFont systemFontOfSize:FSCalendarStandardHeaderTextSize];
+        _weekdayFont = [UIFont boldSystemFontOfSize:FSCalendarStandardWeekdayTextSize];
+        _headerTitleFont = [UIFont boldSystemFontOfSize:FSCalendarStandardHeaderTextSize];
         
-        _headerTitleColor = FSCalendarStandardTitleTextColor;
-        _headerDateFormat = @"MMMM yyyy";
-        _headerMinimumDissolvedAlpha = 0.2;
-        _weekdayTextColor = FSCalendarStandardTitleTextColor;
+        _headerTitleColor = [UIColor colorWithRed:51.0/255.0 green:51.0/255.0 blue:51.0/255.0 alpha:1.0];// FSCalendarStandardTitleTextColor;
+        _headerDateFormat = @"yyyy年MM月";
+        _headerMinimumDissolvedAlpha = 0.0;
+        _weekdayTextColor = [UIColor colorWithRed:51.0/255.0 green:51.0/255.0 blue:51.0/255.0 alpha:1.0]; //FSCalendarStandardTitleTextColor;
         _caseOptions = FSCalendarCaseOptionsHeaderUsesDefaultCase|FSCalendarCaseOptionsWeekdayUsesDefaultCase;
         
         _backgroundColors = [NSMutableDictionary dictionaryWithCapacity:5];
         _backgroundColors[@(FSCalendarCellStateNormal)]      = [UIColor clearColor];
-        _backgroundColors[@(FSCalendarCellStateSelected)]    = FSCalendarStandardSelectionColor;
+        _backgroundColors[@(FSCalendarCellStateSelected)]    = [UIColor colorWithRed:247.0/255.0 green:248.0/255.0 blue:249.0/255.0 alpha:1.0]; // FSCalendarStandardSelectionColor;
         _backgroundColors[@(FSCalendarCellStateDisabled)]    = [UIColor clearColor];
         _backgroundColors[@(FSCalendarCellStatePlaceholder)] = [UIColor clearColor];
-        _backgroundColors[@(FSCalendarCellStateToday)]       = FSCalendarStandardTodayColor;
+        _backgroundColors[@(FSCalendarCellStateToday)]       = [UIColor clearColor]; // FSCalendarStandardTodayColor;
         
         _titleColors = [NSMutableDictionary dictionaryWithCapacity:5];
-        _titleColors[@(FSCalendarCellStateNormal)]      = [UIColor blackColor];
-        _titleColors[@(FSCalendarCellStateSelected)]    = [UIColor whiteColor];
-        _titleColors[@(FSCalendarCellStateDisabled)]    = [UIColor grayColor];
-        _titleColors[@(FSCalendarCellStatePlaceholder)] = [UIColor lightGrayColor];
-        _titleColors[@(FSCalendarCellStateToday)]       = [UIColor whiteColor];
+        _titleColors[@(FSCalendarCellStateNormal)]      = [UIColor colorWithRed:102.0/255.0 green:102.0/255.0 blue:102.0/255.0 alpha:1.0]; //[UIColor blackColor];
+        _titleColors[@(FSCalendarCellStateSelected)]    = [UIColor colorWithRed:102.0/255.0 green:102.0/255.0 blue:102.0/255.0 alpha:1.0]; //[UIColor whiteColor];
+        _titleColors[@(FSCalendarCellStateDisabled)]    = [UIColor colorWithRed:204.0/255.0 green:204.0/255.0 blue:204.0/255.0 alpha:1.0]; //[UIColor grayColor];
+        _titleColors[@(FSCalendarCellStatePlaceholder)] = [UIColor colorWithRed:204.0/255.0 green:204.0/255.0 blue:204.0/255.0 alpha:1.0]; //[UIColor lightGrayColor];
+        _titleColors[@(FSCalendarCellStateToday)]       = [UIColor colorWithRed:255.0/255.0 green:65.0/255.0 blue:65.0/255.0 alpha:1.0]; //[UIColor whiteColor];
         
         _subtitleColors = [NSMutableDictionary dictionaryWithCapacity:5];
         _subtitleColors[@(FSCalendarCellStateNormal)]      = [UIColor darkGrayColor];
@@ -66,11 +66,12 @@
         _borderColors[@(FSCalendarCellStateNormal)] = [UIColor clearColor];
         
         _borderRadius = 1.0;
-        _eventDefaultColor = FSCalendarStandardEventDotColor;
-        _eventSelectionColor = FSCalendarStandardEventDotColor;
-        
+        _eventDefaultColor = [UIColor colorWithRed:51.0/255.0 green:51.0/255.0 blue:51.0/255.0 alpha:1.0]; //FSCalendarStandardEventDotColor;
+        _eventSelectionColor = [UIColor colorWithRed:255.0/255.0 green:65.0/255.0 blue:65.0/255.0 alpha:1.0]; // FSCalendarStandardEventDotColor;
+        _eventTodayColor = [UIColor colorWithRed:255.0/255.0 green:65.0/255.0 blue:65.0/255.0 alpha:1.0];
+        _eventPlaceholderColor = [UIColor colorWithRed:204.0/255.0 green:204.0/255.0 blue:204.0/255.0 alpha:1.0];
+
         _borderColors = [NSMutableDictionary dictionaryWithCapacity:2];
-        
 #if TARGET_INTERFACE_BUILDER
         _fakeEventDots = YES;
 #endif

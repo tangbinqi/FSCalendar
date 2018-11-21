@@ -19,11 +19,12 @@ CGFloat const FSCalendarStandardSeparatorThickness = 0.5;
 CGFloat const FSCalendarAutomaticDimension = -1;
 CGFloat const FSCalendarDefaultBounceAnimationDuration = 0.15;
 CGFloat const FSCalendarStandardRowHeight = 38;
-CGFloat const FSCalendarStandardTitleTextSize = 13.5;
+CGFloat const FSCalendarStandardTitleTextSize = 14;
 CGFloat const FSCalendarStandardSubtitleTextSize = 10;
-CGFloat const FSCalendarStandardWeekdayTextSize = 14;
+CGFloat const FSCalendarStandardWeekdayTextSize = 12;
 CGFloat const FSCalendarStandardHeaderTextSize = 16.5;
-CGFloat const FSCalendarMaximumEventDotDiameter = 4.8;
+CGFloat const FSCalendarMaximumEventDotDiameter = 5.0;//4.8;
+CGFloat const FSCalendarMaximumEventDotSpace = 2.0;//4.8;
 
 NSInteger const FSCalendarDefaultHourComponent = 0;
 
